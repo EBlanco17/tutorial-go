@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/jackc/pgx/v4/stdlib" // O "github.com/lib/pq" si usas pq
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/joho/godotenv"
 )
 
@@ -28,7 +28,7 @@ func main() {
 		dbUser, dbPassword, dbHost, dbPort, dbName)
 
 	// Abre la conexión a la base de datos
-	db, err := sql.Open("pgx", dbConfig) // Usa "pgx" si usas pgx
+	db, err := sql.Open("pgx", dbConfig)
 	if err != nil {
 		log.Fatalf("No se pudo abrir la conexión a la base de datos: %v\n", err)
 	}
@@ -42,7 +42,7 @@ func main() {
 
 	fmt.Println("Conexión a PostgreSQL exitosa!")
 
-	query := "SELECT user_name, email FROM mosat.cliente_mosat LIMIT 10;"
+	query := "SELECT user_name, email, firstnames, lastnames, mobilenumber FROM mosat.cliente_mosat WHERE user_name LIKE '%prue%' ORDER BY user_name ASC LIMIT 10;"
 	rows, err := db.Query(query)
 	if err != nil {
 		log.Fatalf("Error al ejecutar la consulta: %v\n", err)
@@ -50,10 +50,16 @@ func main() {
 	defer rows.Close()
 	for rows.Next() {
 		var user models.User
-		if err := rows.Scan(&user.UserName, &user.Email); err != nil {
+		if err := rows.Scan(&user.UserName, &user.Email, &user.FirstName, &user.LastName, &user.Phone); err != nil {
 			log.Fatalf("Error al escanear la fila: %v\n", err)
 		}
-		fmt.Printf("Username: %s ----- email: %s\n", user.UserName, user.Email)
+		fmt.Printf("Usuario: %+v\n", user.UserName)
+		fmt.Printf("Email: %s\n", user.Email)
+		fmt.Printf("Nombres: %s\n", user.FirstName)
+		fmt.Printf("Apellidos: %s\n", user.LastName)
+		fmt.Printf("Teléfono: %s\n", user.Phone)
+		fmt.Println("------------------------------")
+
 	}
 	if err := rows.Err(); err != nil {
 		log.Fatalf("Error en las filas: %v\n", err)
